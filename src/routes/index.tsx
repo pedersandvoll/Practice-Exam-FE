@@ -7,6 +7,8 @@ import {
   CircularProgress,
   FormControl,
   Grid,
+  IconButton,
+  MenuItem,
   Select,
   Stack,
   Typography,
@@ -14,18 +16,28 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import { useGetCustomerComplaints } from "../hooks/apiHooks";
 import { useState } from "react";
+import { SortComplaintBy } from "../enums";
+import SwapVertIcon from "@mui/icons-material/SwapVert";
+
+const SortByOptions = {
+  [SortComplaintBy.ModifiedAt]: "Sist redigert",
+  [SortComplaintBy.CreatedAt]: "Sist lagd",
+};
 
 export interface ComplaintFilters {
   userId?: string;
   customerId?: string;
-  sortBy: { selected: string; options: string[] };
+  sortBy: {
+    selected: SortComplaintBy;
+    options: typeof SortByOptions;
+  };
   sortOrder: "asc" | "desc";
 }
 
 const initialComplaintFilters: ComplaintFilters = {
   sortBy: {
-    selected: "modified_at",
-    options: ["Sist redigert", "Sist lagd"],
+    selected: SortComplaintBy.ModifiedAt,
+    options: SortByOptions,
   },
   sortOrder: "desc",
 };
@@ -60,15 +72,36 @@ function Index() {
       <Stack
         direction="row"
         alignItems="center"
-        sx={{ flexWrap: "wrap", gap: "8px" }}
+        sx={{ flexWrap: "wrap", gap: "8px", padding: "20px" }}
       >
+        <IconButton
+          onClick={() => {
+            setComplaintFilter({
+              ...complaintFilter,
+              sortOrder: complaintFilter.sortOrder === "asc" ? "desc" : "asc",
+            });
+          }}
+        >
+          <SwapVertIcon
+            sx={{
+              transform:
+                complaintFilter.sortOrder === "asc"
+                  ? "rotate(180deg)"
+                  : "rotate(0deg)",
+              transition: "transform 0.3s",
+            }}
+          />
+        </IconButton>
         <FormControl sx={{ minWidth: "120px" }}>
           <Select
             defaultValue={complaintFilter.sortBy.selected}
             onChange={(event) => {
               setComplaintFilter({
                 ...complaintFilter,
-                sortBy: event.target.value,
+                sortBy: {
+                  ...complaintFilter.sortBy,
+                  selected: event.target.value as SortComplaintBy,
+                },
               });
             }}
             sx={{
@@ -81,11 +114,13 @@ function Index() {
               },
             }}
           >
-            {complaintFilter.sortBy.options.map((sort, index) => (
-              <MenuItem key={index} value={index.toString()}>
-                {sort}
-              </MenuItem>
-            ))}
+            {Object.entries(complaintFilter.sortBy.options).map(
+              ([key, value]) => (
+                <MenuItem key={key} value={key}>
+                  {value}
+                </MenuItem>
+              ),
+            )}
           </Select>
         </FormControl>
       </Stack>

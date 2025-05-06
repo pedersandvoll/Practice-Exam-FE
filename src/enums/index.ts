@@ -3,3 +3,8 @@ export enum Priority {
   Medium = 1,
   Low = 2,
 }
+
+export enum SortComplaintBy {
+  ModifiedAt = "modified_at",
+  CreatedAt = "created_at",
+}

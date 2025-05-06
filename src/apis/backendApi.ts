@@ -108,7 +108,7 @@ export async function getCustomerComplaints(
     params.append(key, value);
   };
 
-  addParam("sortBy", filters.sortBy);
+  addParam("sortBy", filters.sortBy.selected);
   addParam("sortOrder", filters.sortOrder);
   if (filters.userId) {
     addParam("userId", filters.userId);
