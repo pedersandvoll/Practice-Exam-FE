@@ -1,4 +1,6 @@
 import type { LoginFormSchema } from "../components/forms/login";
+import type { NewCommentFormSchema } from "../components/forms/newComment";
+import type { NewComplaintFormSchema } from "../components/forms/newComplaint";
 import type { RegisterFormSchema } from "../components/forms/register";
 import type { Priority } from "../enums/index";
 import type { ComplaintFilters } from "../routes";
@@ -71,7 +73,7 @@ export async function registerUser(model: RegisterFormSchema): Promise<number> {
   return responseData.userid;
 }
 
-interface Customer {
+export interface Customer {
   ID: number;
   Name: string;
   CreatedAt: Date;
@@ -87,6 +89,8 @@ interface Comment {
   ID: number;
   Comment: string;
   ComplaintID: number;
+  CreatedAt: Date;
+  CreatedBy: User;
 }
 
 export interface CustomerComplaints {
@@ -123,6 +127,50 @@ export async function getCustomerComplaints(
     method: "GET",
     headers: createHeaders(),
   });
+
+  return responseData;
+}
+
+export async function getComplaintById(complaintId: string) {
+  const responseData = await apiFetch<CustomerComplaints>(
+    `api/complaints/${complaintId}`,
+    {
+      method: "GET",
+      headers: createHeaders(),
+    },
+  );
+
+  return responseData;
+}
+
+export async function getCustomers() {
+  const responseData = await apiFetch<Customer[]>("api/customers", {
+    method: "GET",
+    headers: createHeaders(),
+  });
+
+  return responseData;
+}
+
+export async function createComplaint(model: NewComplaintFormSchema) {
+  const responseData = await apiFetch<string>("api/complaints/create", {
+    method: "POST",
+    body: JSON.stringify(model),
+    headers: createHeaders(),
+  });
+
+  return responseData;
+}
+
+export async function createComment(model: NewCommentFormSchema) {
+  const responseData = await apiFetch<string>(
+    `api/comments/create/${model.complaintId}`,
+    {
+      method: "POST",
+      body: JSON.stringify({ comment: model.comment }),
+      headers: createHeaders(),
+    },
+  );
 
   return responseData;
 }
