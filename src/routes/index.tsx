@@ -13,11 +13,18 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { createFileRoute } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  Outlet,
+  redirect,
+} from "@tanstack/react-router";
 import { useGetCustomerComplaints } from "../hooks/apiHooks";
 import { useState } from "react";
 import { SortComplaintBy } from "../enums";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
+import NewComplaintForm from "../components/forms/newComplaint";
+import { useAuth } from "../context/AuthContext";
 
 const SortByOptions = {
   [SortComplaintBy.ModifiedAt]: "Sist redigert",
@@ -43,13 +50,33 @@ const initialComplaintFilters: ComplaintFilters = {
 };
 
 export const Route = createFileRoute("/")({
+  beforeLoad: async ({ location }) => {
+    const token = localStorage.getItem("token");
+    const isAuthenticated = !!token;
+
+    if (!isAuthenticated) {
+      throw redirect({
+        to: "/login",
+        search: {
+          redirect: location.href,
+        },
+      });
+    }
+  },
   component: Index,
 });
 
-function Index() {
+interface IndexProps {
+  children?: React.ReactNode;
+}
+
+export function Index(props: IndexProps) {
+  const { children } = props;
+  const navigate = useNavigate();
   const [complaintFilter, setComplaintFilter] = useState<ComplaintFilters>(
     initialComplaintFilters,
   );
+  const [newComplaint, setNewComplaint] = useState<boolean>(false);
   const { data, isLoading } = useGetCustomerComplaints(complaintFilter);
 
   if (isLoading) {
@@ -123,12 +150,52 @@ function Index() {
             )}
           </Select>
         </FormControl>
+        <Button
+          onClick={() => setNewComplaint(true)}
+          disabled={newComplaint}
+          variant="outlined"
+          sx={{ marginLeft: "auto" }}
+        >
+          Lag ny klage
+        </Button>
       </Stack>
-      <Grid container spacing={2}>
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          alignItems: "stretch",
+        }}
+      >
+        {newComplaint && (
+          <Grid>
+            <Card sx={{ width: 400 }} variant="outlined">
+              <CardContent>
+                <NewComplaintForm onCancel={() => setNewComplaint(false)} />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
         {data &&
           data.map((complaint) => (
-            <Grid>
-              <Card sx={{ minWidth: 400 }} variant="outlined">
+            <Grid key={complaint.ID}>
+              <Card
+                sx={{
+                  maxWidth: 400,
+                  width: "auto",
+                  "&:hover": {
+                    backgroundColor: "whitesmoke",
+                    cursor: "pointer",
+                  },
+                  transition: "background-color 0.2s",
+                }}
+                variant="outlined"
+                onClick={() => {
+                  navigate({
+                    to: "/$complaintId",
+                    params: { complaintId: complaint.ID.toString() },
+                  });
+                }}
+              >
                 <CardContent>
                   <Typography variant="h5" component="div">
                     {complaint.Customer.Name}
@@ -149,14 +216,15 @@ function Index() {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button size="small">
-                    Kommentarer ({complaint.Comments.length})
-                  </Button>
+                  <Typography variant="caption">
+                    {complaint.Comments.length} kommentarer
+                  </Typography>
                 </CardActions>
               </Card>
             </Grid>
           ))}
       </Grid>
+      {children && children}
     </Box>
   );
 }
