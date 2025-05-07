@@ -19,8 +19,7 @@ export default function LoginForm() {
   const { mutateAsync } = useLoginUser(() => navigate({ to: "/" }));
   const form = useForm({
     validators: {
-      onChangeAsync: loginSchema,
-      onChangeAsyncDebounceMs: 500,
+      onChange: loginSchema,
     },
     onSubmit: async ({ value }) => {
       console.log("formvalue", value);
@@ -47,7 +46,7 @@ export default function LoginForm() {
           borderRadius: "8px",
         }}
       >
-        <Typography variant="h4">Login</Typography>
+        <Typography variant="h4">Logg inn</Typography>
         <form.Field
           name="email"
           children={(field) => (
@@ -55,14 +54,11 @@ export default function LoginForm() {
               autoFocus
               fullWidth
               variant="filled"
-              label="Email"
+              label="E-post"
               onChange={(e) => field.handleChange(e.target.value)}
               value={field.state.value}
-              error={field.state.meta.isTouched && !!field.state.meta.errors[0]}
-              helperText={
-                field.state.meta.isTouched &&
-                field.state.meta.errors[0]?.message
-              }
+              error={!!field.state.meta.errors[0]}
+              helperText={field.state.meta.errors[0]?.message}
               type="email"
               sx={{ minWidth: "400px" }}
             />
@@ -74,7 +70,7 @@ export default function LoginForm() {
             <TextField
               fullWidth
               variant="filled"
-              label="Password"
+              label="Passord"
               onChange={(e) => field.handleChange(e.target.value)}
               value={field.state.value}
               error={field.state.meta.isTouched && !!field.state.meta.errors[0]}
@@ -96,13 +92,15 @@ export default function LoginForm() {
               variant="contained"
               fullWidth
             >
-              {isSubmitting ? "..." : "Log in"}
+              {isSubmitting ? "..." : "Logg inn"}
             </Button>
           )}
         />
         <Stack direction="row" alignItems="center" justifyContent="center">
-          <Typography>Don't have an account?</Typography>
-          <Button onClick={() => navigate({ to: "/register" })}>Sign up</Button>
+          <Typography>Har du ikke en konto?</Typography>
+          <Button onClick={() => navigate({ to: "/register" })}>
+            Registrer
+          </Button>
         </Stack>
       </Stack>
     </form>
