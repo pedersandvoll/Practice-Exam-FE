@@ -24,6 +24,7 @@ import { useState } from "react";
 import { SortComplaintBy } from "../enums";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
 import EditIcon from "@mui/icons-material/Edit";
+import CategoryIcon from "@mui/icons-material/Category";
 import NewComplaintForm, {
   type NewComplaintFormSchema,
 } from "../components/forms/newComplaint";
@@ -224,6 +225,7 @@ export function Index(props: IndexProps) {
                           customername: complaint.Customer.Name,
                           description: complaint.Description,
                           priority: complaint.Priority,
+                          category: complaint.Category.ID,
                         }}
                         edit={true}
                       />
@@ -263,6 +265,14 @@ export function Index(props: IndexProps) {
                           size="small"
                           sx={{ marginLeft: "auto" }}
                         />
+                      </Stack>
+                      <Stack direction="row" alignItems="center">
+                        <CategoryIcon
+                          sx={{ fontSize: "small", marginRight: 0.5 }}
+                        />
+                        <Typography variant="caption">
+                          {complaint.Category.Name}
+                        </Typography>
                       </Stack>
                       <Typography
                         variant="body2"

@@ -4,11 +4,13 @@ import {
   createComment,
   createComplaint,
   editComplaint,
+  getCategories,
   getComplaintById,
   getCustomerComplaints,
   getCustomers,
   loginUser,
   registerUser,
+  type Categories,
   type Customer,
   type CustomerComplaints,
 } from "../apis/backendApi";
@@ -59,6 +61,13 @@ export const useGetCustomers = () => {
   return useQuery({
     queryKey: ["Customers"],
     queryFn: (): Promise<Customer[]> => getCustomers(),
+  });
+};
+
+export const useGetCategories = () => {
+  return useQuery({
+    queryKey: ["Categories"],
+    queryFn: (): Promise<Categories[]> => getCategories(),
   });
 };
 

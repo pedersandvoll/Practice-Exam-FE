@@ -79,6 +79,12 @@ export interface Customer {
   CreatedAt: Date;
 }
 
+export interface Categories {
+  ID: number;
+  Name: string;
+  CreatedAt: Date;
+}
+
 interface User {
   ID: number;
   Email: string;
@@ -102,6 +108,7 @@ export interface CustomerComplaints {
   CreatedBy: User;
   Priority: Priority;
   Comments: Comment[];
+  Category: Categories;
 }
 
 export async function getCustomerComplaints(
@@ -152,6 +159,15 @@ export async function getCustomers() {
   return responseData;
 }
 
+export async function getCategories() {
+  const responseData = await apiFetch<Categories[]>("api/categories", {
+    method: "GET",
+    headers: createHeaders(),
+  });
+
+  return responseData;
+}
+
 export async function createComplaint(model: NewComplaintFormSchema) {
   const responseData = await apiFetch<string>("api/complaints/create", {
     method: "POST",
@@ -173,6 +189,7 @@ export async function editComplaint(
       body: JSON.stringify({
         description: model.description,
         priority: model.priority,
+        category: model.category,
       }),
       headers: createHeaders(),
     },

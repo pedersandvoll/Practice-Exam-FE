@@ -11,13 +11,14 @@ import {
 } from "@mui/material";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { useGetCustomers } from "../../hooks/apiHooks";
+import { useGetCategories, useGetCustomers } from "../../hooks/apiHooks";
 import { Priority } from "../../enums";
 
 const newComplaintSchema = z.object({
   customername: z.string().min(1, { message: "Customer is required" }),
   description: z.string().min(1, { message: "Description is required" }),
   priority: z.nativeEnum(Priority, { message: "Priority is required" }),
+  category: z.number(),
 });
 
 export type NewComplaintFormSchema = z.infer<typeof newComplaintSchema>;
@@ -37,10 +38,12 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
       customername: "",
       description: "",
       priority: Priority.Medium,
+      category: 5,
     },
     edit = false,
   } = props;
-  const { data } = useGetCustomers();
+  const { data: customersData } = useGetCustomers();
+  const { data: categoriesData } = useGetCategories();
   const form = useForm({
     defaultValues: defaultValues,
     validators: {
@@ -72,7 +75,11 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
               <Autocomplete
                 freeSolo
                 disableClearable
-                options={data ? data.map((customer) => customer.Name) : []}
+                options={
+                  customersData
+                    ? customersData.map((customer) => customer.Name)
+                    : []
+                }
                 onChange={(_, newValue) => field.handleChange(newValue)}
                 renderInput={(params) => (
                   <TextField
@@ -131,6 +138,24 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
                 <MenuItem value={Priority.High}>Høy</MenuItem>
                 <MenuItem value={Priority.Medium}>Medium</MenuItem>
                 <MenuItem value={Priority.Low}>Lav</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        />
+        <form.Field
+          name="category"
+          children={(field) => (
+            <FormControl fullWidth>
+              <InputLabel>Kategori</InputLabel>
+              <Select
+                variant="filled"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(Number(e.target.value))}
+              >
+                {categoriesData &&
+                  categoriesData.map((category) => (
+                    <MenuItem value={category.ID}>{category.Name}</MenuItem>
+                  ))}
               </Select>
             </FormControl>
           )}

@@ -111,6 +111,9 @@ export default function ComplaintDetailDialog({
 
         <Box sx={{ my: 2 }}>
           <Typography variant="subtitle2" color="text.secondary">
+            Kategori: {complaint.Category.Name}
+          </Typography>
+          <Typography variant="subtitle2" color="text.secondary">
             Opprettet:{" "}
             {new Date(complaint.CreatedAt).toLocaleString("no-NO", {
               month: "long",
