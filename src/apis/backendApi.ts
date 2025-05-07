@@ -162,6 +162,25 @@ export async function createComplaint(model: NewComplaintFormSchema) {
   return responseData;
 }
 
+export async function editComplaint(
+  model: NewComplaintFormSchema,
+  complaintId: number,
+) {
+  const responseData = await apiFetch<string>(
+    `api/complaints/edit/${complaintId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        description: model.description,
+        priority: model.priority,
+      }),
+      headers: createHeaders(),
+    },
+  );
+
+  return responseData;
+}
+
 export async function createComment(model: NewCommentFormSchema) {
   const responseData = await apiFetch<string>(
     `api/comments/create/${model.complaintId}`,

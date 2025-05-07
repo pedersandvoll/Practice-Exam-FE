@@ -3,6 +3,7 @@ import type { LoginFormSchema } from "../components/forms/login";
 import {
   createComment,
   createComplaint,
+  editComplaint,
   getComplaintById,
   getCustomerComplaints,
   getCustomers,
@@ -65,6 +66,16 @@ export const usePostComplaint = (onSuccess: () => void) => {
   return useMutation({
     mutationFn: (model: NewComplaintFormSchema): Promise<string> =>
       createComplaint(model),
+    onSuccess: () => onSuccess(),
+  });
+};
+
+export const usePutComplaint = (onSuccess: () => void) => {
+  return useMutation({
+    mutationFn: (data: {
+      model: NewComplaintFormSchema;
+      complaintId: number;
+    }): Promise<string> => editComplaint(data.model, data.complaintId),
     onSuccess: () => onSuccess(),
   });
 };

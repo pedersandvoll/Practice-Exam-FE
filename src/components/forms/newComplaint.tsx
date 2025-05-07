@@ -1,43 +1,54 @@
 import {
   Autocomplete,
   Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { useGetCustomers, usePostComplaint } from "../../hooks/apiHooks";
-import { useQueryClient } from "@tanstack/react-query";
+import { useGetCustomers } from "../../hooks/apiHooks";
+import { Priority } from "../../enums";
 
 const newComplaintSchema = z.object({
   customername: z.string().min(1, { message: "Customer is required" }),
   description: z.string().min(1, { message: "Description is required" }),
+  priority: z.nativeEnum(Priority, { message: "Priority is required" }),
 });
 
 export type NewComplaintFormSchema = z.infer<typeof newComplaintSchema>;
 
 interface NewComplaintFormProps {
   onCancel: () => void;
+  onSave: (model: NewComplaintFormSchema) => Promise<void>;
+  defaultValues?: NewComplaintFormSchema;
+  edit?: boolean;
 }
 
 export default function NewComplaintForm(props: NewComplaintFormProps) {
-  const { onCancel } = props;
-  const queryClient = useQueryClient();
-  const onSuccess = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["CustomerComplaints"],
-    });
-  };
+  const {
+    onCancel,
+    onSave,
+    defaultValues = {
+      customername: "",
+      description: "",
+      priority: Priority.Medium,
+    },
+    edit = false,
+  } = props;
   const { data } = useGetCustomers();
-  const { mutateAsync } = usePostComplaint(onSuccess);
   const form = useForm({
+    defaultValues: defaultValues,
     validators: {
       onChangeAsync: newComplaintSchema,
       onChangeAsyncDebounceMs: 500,
     },
     onSubmit: async ({ value }) => {
-      await mutateAsync(value as NewComplaintFormSchema);
+      await onSave(value as NewComplaintFormSchema);
       onCancel();
     },
   });
@@ -52,43 +63,49 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
     >
       <Stack gap={2}>
         <Typography variant="h5" component="div">
-          Ny klage
+          {!edit ? "Ny klage" : "Rediger klage"}
         </Typography>
-        <form.Field
-          name="customername"
-          children={(field) => (
-            <Autocomplete
-              freeSolo
-              disableClearable
-              options={data ? data.map((customer) => customer.Name) : []}
-              onChange={(_, newValue) => field.handleChange(newValue)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  autoFocus
-                  fullWidth
-                  variant="filled"
-                  label="Kunde"
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  value={field.state.value}
-                  error={!!field.state.meta.errors[0]}
-                  helperText={field.state.meta.errors[0]?.message}
-                  slotProps={{
-                    input: {
-                      ...params.InputProps,
-                      type: "search",
-                    },
-                  }}
-                />
-              )}
-            />
-          )}
-        />
+        {!edit ? (
+          <form.Field
+            name="customername"
+            children={(field) => (
+              <Autocomplete
+                freeSolo
+                disableClearable
+                options={data ? data.map((customer) => customer.Name) : []}
+                onChange={(_, newValue) => field.handleChange(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    autoFocus
+                    fullWidth
+                    variant="filled"
+                    label="Kunde"
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    value={field.state.value}
+                    error={!!field.state.meta.errors[0]}
+                    helperText={field.state.meta.errors[0]?.message}
+                    slotProps={{
+                      input: {
+                        ...params.InputProps,
+                        type: "search",
+                      },
+                    }}
+                  />
+                )}
+              />
+            )}
+          />
+        ) : (
+          <Typography>{form.store.state.values.customername}</Typography>
+        )}
         <form.Field
           name="description"
           children={(field) => (
             <TextField
               fullWidth
+              multiline
+              maxRows={4}
               variant="filled"
               label="Beskrivelse"
               onChange={(e) => field.handleChange(e.target.value)}
@@ -99,6 +116,23 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
                 field.state.meta.errors[0]?.message
               }
             />
+          )}
+        />
+        <form.Field
+          name="priority"
+          children={(field) => (
+            <FormControl fullWidth>
+              <InputLabel>Prioritet</InputLabel>
+              <Select
+                variant="filled"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value as Priority)}
+              >
+                <MenuItem value={Priority.High}>Høy</MenuItem>
+                <MenuItem value={Priority.Medium}>Medium</MenuItem>
+                <MenuItem value={Priority.Low}>Lav</MenuItem>
+              </Select>
+            </FormControl>
           )}
         />
         <Stack direction="row" alignItems="center" gap={1}>

@@ -4,6 +4,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  Chip,
   CircularProgress,
   FormControl,
   Grid,
@@ -13,18 +14,21 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import {
-  createFileRoute,
-  useNavigate,
-  Outlet,
-  redirect,
-} from "@tanstack/react-router";
-import { useGetCustomerComplaints } from "../hooks/apiHooks";
+  useGetCustomerComplaints,
+  usePostComplaint,
+  usePutComplaint,
+} from "../hooks/apiHooks";
 import { useState } from "react";
 import { SortComplaintBy } from "../enums";
 import SwapVertIcon from "@mui/icons-material/SwapVert";
-import NewComplaintForm from "../components/forms/newComplaint";
-import { useAuth } from "../context/AuthContext";
+import EditIcon from "@mui/icons-material/Edit";
+import NewComplaintForm, {
+  type NewComplaintFormSchema,
+} from "../components/forms/newComplaint";
+import { getPriorityLabel } from "../components/ComplaintDetailDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 const SortByOptions = {
   [SortComplaintBy.ModifiedAt]: "Sist redigert",
@@ -73,11 +77,35 @@ interface IndexProps {
 export function Index(props: IndexProps) {
   const { children } = props;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const onSuccess = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["CustomerComplaints"],
+    });
+  };
+  const { mutateAsync: asyncPostComplaint } = usePostComplaint(onSuccess);
+  const { mutateAsync: asyncPutComplaint } = usePutComplaint(onSuccess);
   const [complaintFilter, setComplaintFilter] = useState<ComplaintFilters>(
     initialComplaintFilters,
   );
   const [newComplaint, setNewComplaint] = useState<boolean>(false);
+  const [editComplaint, setEditComplaint] = useState<number[]>([]);
   const { data, isLoading } = useGetCustomerComplaints(complaintFilter);
+
+  const handleSaveComplaint = async (model: NewComplaintFormSchema) => {
+    await asyncPostComplaint(model);
+  };
+
+  const handleEditComplaint = async (
+    model: NewComplaintFormSchema,
+    complaintId: number,
+  ) => {
+    await asyncPutComplaint({ model: model, complaintId: complaintId });
+  };
+
+  const handleCancelEdit = (complaintId: number) => {
+    setEditComplaint(editComplaint.filter((id) => id !== complaintId));
+  };
 
   if (isLoading) {
     return (
@@ -170,59 +198,112 @@ export function Index(props: IndexProps) {
           <Grid>
             <Card sx={{ width: 400 }} variant="outlined">
               <CardContent>
-                <NewComplaintForm onCancel={() => setNewComplaint(false)} />
+                <NewComplaintForm
+                  onCancel={() => setNewComplaint(false)}
+                  onSave={handleSaveComplaint}
+                />
               </CardContent>
             </Card>
           </Grid>
         )}
         {data &&
-          data.map((complaint) => (
-            <Grid key={complaint.ID}>
-              <Card
-                sx={{
-                  maxWidth: 400,
-                  width: "auto",
-                  "&:hover": {
-                    backgroundColor: "whitesmoke",
-                    cursor: "pointer",
-                  },
-                  transition: "background-color 0.2s",
-                }}
-                variant="outlined"
-                onClick={() => {
-                  navigate({
-                    to: "/$complaintId",
-                    params: { complaintId: complaint.ID.toString() },
-                  });
-                }}
-              >
-                <CardContent>
-                  <Typography variant="h5" component="div">
-                    {complaint.Customer.Name}
-                  </Typography>
-                  <Typography
-                    variant="body2"
+          data.map((complaint) => {
+            const priorityInfo = getPriorityLabel(complaint.Priority);
+
+            if (editComplaint.includes(complaint.ID)) {
+              return (
+                <Grid>
+                  <Card sx={{ width: 400 }} variant="outlined">
+                    <CardContent>
+                      <NewComplaintForm
+                        onCancel={() => handleCancelEdit(complaint.ID)}
+                        onSave={(model) =>
+                          handleEditComplaint(model, complaint.ID)
+                        }
+                        defaultValues={{
+                          customername: complaint.Customer.Name,
+                          description: complaint.Description,
+                          priority: complaint.Priority,
+                        }}
+                        edit={true}
+                      />
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            } else {
+              return (
+                <Grid key={complaint.ID}>
+                  <Card
                     sx={{
-                      width: "365px",
-                      wordWrap: "break-word",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 4,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
+                      maxWidth: 400,
+                      width: "auto",
+                      "&:hover": {
+                        backgroundColor: "whitesmoke",
+                        cursor: "pointer",
+                      },
+                      transition: "background-color 0.2s",
+                    }}
+                    variant="outlined"
+                    onClick={() => {
+                      navigate({
+                        to: "/$complaintId",
+                        params: { complaintId: complaint.ID.toString() },
+                      });
                     }}
                   >
-                    {complaint.Description}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Typography variant="caption">
-                    {complaint.Comments.length} kommentarer
-                  </Typography>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+                    <CardContent>
+                      <Stack direction="row" alignItems="center">
+                        <Typography variant="h5" component="div">
+                          {complaint.Customer.Name}
+                        </Typography>
+                        <Chip
+                          label={priorityInfo.label}
+                          color={priorityInfo.color as any}
+                          size="small"
+                          sx={{ marginLeft: "auto" }}
+                        />
+                      </Stack>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          width: "365px",
+                          wordWrap: "break-word",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 4,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {complaint.Description}
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        sx={{ width: "100%" }}
+                      >
+                        <Typography variant="caption">
+                          {complaint.Comments.length} kommentarer
+                        </Typography>
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditComplaint([...editComplaint, complaint.ID]);
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Stack>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              );
+            }
+          })}
       </Grid>
       {children && children}
     </Box>
