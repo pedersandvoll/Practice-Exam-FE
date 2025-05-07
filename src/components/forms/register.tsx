@@ -1,5 +1,5 @@
 import { Button, Stack, TextField, Typography } from "@mui/material";
-import { useForm } from "@tanstack/react-form";
+import { useForm, type AnyFieldApi } from "@tanstack/react-form";
 import { z } from "zod";
 import { useRegisterUser } from "../../hooks/apiHooks";
 import { useNavigate } from "@tanstack/react-router";
@@ -21,8 +21,7 @@ export default function RegisterForm() {
   const { mutateAsync } = useRegisterUser(() => navigate({ to: "/login" }));
   const form = useForm({
     validators: {
-      onChangeAsync: registerSchema,
-      onChangeAsyncDebounceMs: 500,
+      onChange: registerSchema,
     },
     onSubmit: async ({ value }) => {
       mutateAsync(value as RegisterFormSchema);
@@ -48,25 +47,29 @@ export default function RegisterForm() {
           borderRadius: "8px",
         }}
       >
-        <Typography variant="h4">Sign up</Typography>
+        <Typography variant="h4">Registrer</Typography>
         <form.Field
           name="email"
           children={(field) => (
-            <TextField
-              autoFocus
-              fullWidth
-              variant="filled"
-              label="Email"
-              onChange={(e) => field.handleChange(e.target.value)}
-              value={field.state.value}
-              error={field.state.meta.isTouched && !!field.state.meta.errors[0]}
-              helperText={
-                field.state.meta.isTouched &&
-                field.state.meta.errors[0]?.message
-              }
-              type="email"
-              sx={{ minWidth: "400px" }}
-            />
+            <>
+              <TextField
+                autoFocus
+                fullWidth
+                variant="filled"
+                label="E-post"
+                onChange={(e) => field.handleChange(e.target.value)}
+                value={field.state.value}
+                error={
+                  field.state.meta.isTouched && !!field.state.meta.errors[0]
+                }
+                helperText={
+                  field.state.meta.isTouched &&
+                  field.state.meta.errors[0]?.message
+                }
+                type="email"
+                sx={{ minWidth: "400px" }}
+              />
+            </>
           )}
         />
         <form.Field
@@ -75,7 +78,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="filled"
-              label="First name"
+              label="Fornavn"
               onChange={(e) => field.handleChange(e.target.value)}
               value={field.state.value}
               error={field.state.meta.isTouched && !!field.state.meta.errors[0]}
@@ -93,7 +96,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="filled"
-              label="Last name"
+              label="Etternavn"
               onChange={(e) => field.handleChange(e.target.value)}
               value={field.state.value}
               error={field.state.meta.isTouched && !!field.state.meta.errors[0]}
@@ -111,7 +114,7 @@ export default function RegisterForm() {
             <TextField
               fullWidth
               variant="filled"
-              label="Password"
+              label="Passord"
               onChange={(e) => field.handleChange(e.target.value)}
               value={field.state.value}
               error={field.state.meta.isTouched && !!field.state.meta.errors[0]}
@@ -133,13 +136,13 @@ export default function RegisterForm() {
               variant="contained"
               fullWidth
             >
-              {isSubmitting ? "..." : "Log in"}
+              {isSubmitting ? "..." : "Registrer"}
             </Button>
           )}
         />
         <Stack direction="row" alignItems="center" justifyContent="center">
-          <Typography>Already have an account?</Typography>
-          <Button onClick={() => navigate({ to: "/login" })}>Log in</Button>
+          <Typography>Har du allerede en konto?</Typography>
+          <Button onClick={() => navigate({ to: "/login" })}>Logg inn</Button>
         </Stack>
       </Stack>
     </form>
