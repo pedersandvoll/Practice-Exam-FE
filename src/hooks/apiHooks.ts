@@ -8,11 +8,13 @@ import {
   getComplaintById,
   getCustomerComplaints,
   getCustomers,
+  getUsers,
   loginUser,
   registerUser,
   type Categories,
   type Customer,
   type CustomerComplaints,
+  type User,
 } from "../apis/backendApi";
 import { useAuth } from "../context/AuthContext";
 import type { RegisterFormSchema } from "../components/forms/register";
@@ -40,11 +42,21 @@ export const useRegisterUser = (onSuccess: () => void) => {
   });
 };
 
-export const useGetCustomerComplaints = (filters: ComplaintFilters) => {
+export const useGetUsers = () => {
   return useQuery({
-    queryKey: ["CustomerComplaints", filters],
+    queryKey: ["Users"],
+    queryFn: (): Promise<User[]> => getUsers(),
+  });
+};
+
+export const useGetCustomerComplaints = (
+  filters: ComplaintFilters,
+  searchValue: string,
+) => {
+  return useQuery({
+    queryKey: ["CustomerComplaints", filters, searchValue],
     queryFn: (): Promise<CustomerComplaints[]> =>
-      getCustomerComplaints(filters),
+      getCustomerComplaints(filters, searchValue),
     staleTime: 1000,
     placeholderData: keepPreviousData,
   });

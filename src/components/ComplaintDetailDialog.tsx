@@ -12,7 +12,7 @@ import {
   Stack,
 } from "@mui/material";
 import { useNavigate } from "@tanstack/react-router";
-import { Priority } from "../enums";
+import { Priority, Status } from "../enums";
 import type { CustomerComplaints } from "../apis/backendApi";
 import NewCommentForm from "./forms/newComment";
 
@@ -32,6 +32,19 @@ export const getPriorityLabel = (priority: Priority) => {
       return { label: "Lav", color: "success" };
     default:
       return { label: "Ukjent", color: "default" };
+  }
+};
+
+export const getStatusLabel = (status: Status) => {
+  switch (status) {
+    case Status.New:
+      return { label: "Ny" };
+    case Status.UnderTreatment:
+      return { label: "Under behandling" };
+    case Status.Solved:
+      return { label: "Løst" };
+    default:
+      return { label: "Ukjent" };
   }
 };
 
@@ -79,6 +92,7 @@ export default function ComplaintDetailDialog({
   }
 
   const priorityInfo = getPriorityLabel(complaint.Priority);
+  const statusInfo = getStatusLabel(complaint.Status);
 
   return (
     <Dialog
@@ -110,6 +124,9 @@ export default function ComplaintDetailDialog({
         </Typography>
 
         <Box sx={{ my: 2 }}>
+          <Typography variant="subtitle2" color="text.secondary">
+            Status: {statusInfo.label}
+          </Typography>
           <Typography variant="subtitle2" color="text.secondary">
             Kategori: {complaint.Category.Name}
           </Typography>
@@ -177,4 +194,3 @@ export default function ComplaintDetailDialog({
     </Dialog>
   );
 }
-

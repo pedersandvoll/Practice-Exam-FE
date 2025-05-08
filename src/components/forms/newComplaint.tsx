@@ -12,12 +12,13 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { useGetCategories, useGetCustomers } from "../../hooks/apiHooks";
-import { Priority } from "../../enums";
+import { Priority, Status } from "../../enums";
 
 const newComplaintSchema = z.object({
   customername: z.string().min(1, { message: "Customer is required" }),
   description: z.string().min(1, { message: "Description is required" }),
   priority: z.nativeEnum(Priority, { message: "Priority is required" }),
+  status: z.nativeEnum(Status, { message: "Status is required" }),
   category: z.number(),
 });
 
@@ -38,7 +39,8 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
       customername: "",
       description: "",
       priority: Priority.Medium,
-      category: 5,
+      status: Status.New,
+      category: 4,
     },
     edit = false,
   } = props;
@@ -142,6 +144,27 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
             </FormControl>
           )}
         />
+        {edit && (
+          <form.Field
+            name="status"
+            children={(field) => (
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  variant="filled"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value as Status)}
+                >
+                  <MenuItem value={Status.New}>Ny</MenuItem>
+                  <MenuItem value={Status.UnderTreatment}>
+                    Under behandling
+                  </MenuItem>
+                  <MenuItem value={Status.Solved}>Løst</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+          />
+        )}
         <form.Field
           name="category"
           children={(field) => (
@@ -161,6 +184,9 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
           )}
         />
         <Stack direction="row" alignItems="center" gap={1}>
+          <Button onClick={onCancel} variant="contained" fullWidth>
+            Avbryt
+          </Button>
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
             children={([canSubmit, isSubmitting]) => (
@@ -174,9 +200,6 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
               </Button>
             )}
           />
-          <Button onClick={onCancel} variant="contained" fullWidth>
-            Avbryt
-          </Button>
         </Stack>
       </Stack>
     </form>

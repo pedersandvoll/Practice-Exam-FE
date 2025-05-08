@@ -2,7 +2,7 @@ import type { LoginFormSchema } from "../components/forms/login";
 import type { NewCommentFormSchema } from "../components/forms/newComment";
 import type { NewComplaintFormSchema } from "../components/forms/newComplaint";
 import type { RegisterFormSchema } from "../components/forms/register";
-import type { Priority } from "../enums/index";
+import type { Priority, Status } from "../enums/index";
 import type { ComplaintFilters } from "../routes";
 
 const BASE_URL = "http://localhost:3000/";
@@ -85,7 +85,7 @@ export interface Categories {
   CreatedAt: Date;
 }
 
-interface User {
+export interface User {
   ID: number;
   Email: string;
   Name: string;
@@ -107,12 +107,23 @@ export interface CustomerComplaints {
   ModifiedAt: Date;
   CreatedBy: User;
   Priority: Priority;
+  Status: Status;
   Comments: Comment[];
   Category: Categories;
 }
 
+export async function getUsers() {
+  const responseData = await apiFetch<User[]>("api/users", {
+    method: "GET",
+    headers: createHeaders(),
+  });
+
+  return responseData;
+}
+
 export async function getCustomerComplaints(
   filters: ComplaintFilters,
+  searchValue: string,
 ): Promise<CustomerComplaints[]> {
   const params = new URLSearchParams();
   const addParam = (key: string, value: string): void => {
@@ -121,6 +132,7 @@ export async function getCustomerComplaints(
 
   addParam("sortBy", filters.sortBy.selected);
   addParam("sortOrder", filters.sortOrder);
+  addParam("searchValue", searchValue);
   if (filters.userId) {
     addParam("userId", filters.userId);
   }
@@ -189,6 +201,7 @@ export async function editComplaint(
       body: JSON.stringify({
         description: model.description,
         priority: model.priority,
+        status: model.status,
         category: model.category,
       }),
       headers: createHeaders(),

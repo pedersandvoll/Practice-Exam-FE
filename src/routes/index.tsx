@@ -12,11 +12,14 @@ import {
   MenuItem,
   Select,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import {
   useGetCustomerComplaints,
+  useGetCustomers,
+  useGetUsers,
   usePostComplaint,
   usePutComplaint,
 } from "../hooks/apiHooks";
@@ -28,8 +31,12 @@ import CategoryIcon from "@mui/icons-material/Category";
 import NewComplaintForm, {
   type NewComplaintFormSchema,
 } from "../components/forms/newComplaint";
-import { getPriorityLabel } from "../components/ComplaintDetailDialog";
+import {
+  getPriorityLabel,
+  getStatusLabel,
+} from "../components/ComplaintDetailDialog";
 import { useQueryClient } from "@tanstack/react-query";
+import useDebounce from "../hooks/useDebouce";
 
 const SortByOptions = {
   [SortComplaintBy.ModifiedAt]: "Sist redigert",
@@ -86,12 +93,22 @@ export function Index(props: IndexProps) {
   };
   const { mutateAsync: asyncPostComplaint } = usePostComplaint(onSuccess);
   const { mutateAsync: asyncPutComplaint } = usePutComplaint(onSuccess);
+
   const [complaintFilter, setComplaintFilter] = useState<ComplaintFilters>(
     initialComplaintFilters,
   );
+  const [searchValue, setSearchValue] = useState("");
+  const debouncedSearchValue = useDebounce(searchValue, 500);
+
   const [newComplaint, setNewComplaint] = useState<boolean>(false);
   const [editComplaint, setEditComplaint] = useState<number[]>([]);
-  const { data, isLoading } = useGetCustomerComplaints(complaintFilter);
+
+  const { data, isLoading } = useGetCustomerComplaints(
+    complaintFilter,
+    debouncedSearchValue,
+  );
+  const { data: customersData } = useGetCustomers();
+  const { data: usersData } = useGetUsers();
 
   const handleSaveComplaint = async (model: NewComplaintFormSchema) => {
     await asyncPostComplaint(model);
@@ -106,6 +123,10 @@ export function Index(props: IndexProps) {
 
   const handleCancelEdit = (complaintId: number) => {
     setEditComplaint(editComplaint.filter((id) => id !== complaintId));
+  };
+
+  const handleSearchComplaints = (searchValue: string) => {
+    setSearchValue(searchValue);
   };
 
   if (isLoading) {
@@ -179,6 +200,92 @@ export function Index(props: IndexProps) {
             )}
           </Select>
         </FormControl>
+        <FormControl sx={{ minWidth: "120px" }}>
+          <Select
+            value={complaintFilter.customerId ?? ""}
+            displayEmpty
+            renderValue={(selected) => {
+              if (!selected) return "Alle kunder";
+              const selectedCustomer = customersData?.find(
+                (customer) => customer.ID === Number(selected),
+              );
+              return selectedCustomer?.Name || "";
+            }}
+            onChange={(event) => {
+              const value = event.target.value as string;
+              setComplaintFilter({
+                ...complaintFilter,
+                customerId: value === "" ? undefined : value,
+              });
+            }}
+            sx={{
+              height: "41px",
+              borderRadius: "8px",
+              fontSize: "0.875rem",
+              fontWeight: "500",
+              "& .MuiOutlinedInput-notchedOutline": {
+                border: "2px solid",
+              },
+            }}
+          >
+            <MenuItem value="">Alle kunder</MenuItem>
+            {customersData &&
+              customersData.map((customer) => (
+                <MenuItem key={customer.ID} value={customer.ID}>
+                  {customer.Name}
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: "120px" }}>
+          <Select
+            value={complaintFilter.userId ?? ""}
+            displayEmpty
+            renderValue={(selected) => {
+              if (!selected) return "Alle brukere";
+              const selectedUser = usersData?.find(
+                (user) => user.ID === Number(selected),
+              );
+              return selectedUser?.Name || "";
+            }}
+            onChange={(event) => {
+              const value = event.target.value as string;
+              setComplaintFilter({
+                ...complaintFilter,
+                userId: value === "" ? undefined : value,
+              });
+            }}
+            sx={{
+              height: "41px",
+              borderRadius: "8px",
+              fontSize: "0.875rem",
+              fontWeight: "500",
+              "& .MuiOutlinedInput-notchedOutline": {
+                border: "2px solid",
+              },
+            }}
+          >
+            <MenuItem value="">Alle brukere</MenuItem>
+            {usersData &&
+              usersData.map((user) => (
+                <MenuItem key={user.ID} value={user.ID}>
+                  {user.Name}
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+        <TextField
+          onChange={(e) => handleSearchComplaints(e.target.value)}
+          size="small"
+          placeholder="Søk i klager..."
+          sx={{
+            borderRadius: "8px",
+            fontWeight: "500",
+            "& .MuiOutlinedInput-notchedOutline": {
+              border: "2px solid",
+            },
+          }}
+        />
         <Button
           onClick={() => setNewComplaint(true)}
           disabled={newComplaint}
@@ -210,6 +317,7 @@ export function Index(props: IndexProps) {
         {data &&
           data.map((complaint) => {
             const priorityInfo = getPriorityLabel(complaint.Priority);
+            const statusInfo = getStatusLabel(complaint.Status);
 
             if (editComplaint.includes(complaint.ID)) {
               return (
@@ -226,6 +334,7 @@ export function Index(props: IndexProps) {
                           description: complaint.Description,
                           priority: complaint.Priority,
                           category: complaint.Category.ID,
+                          status: complaint.Status,
                         }}
                         edit={true}
                       />
@@ -266,6 +375,7 @@ export function Index(props: IndexProps) {
                           sx={{ marginLeft: "auto" }}
                         />
                       </Stack>
+                      <Typography>{statusInfo.label}</Typography>
                       <Stack direction="row" alignItems="center">
                         <CategoryIcon
                           sx={{ fontSize: "small", marginRight: 0.5 }}
