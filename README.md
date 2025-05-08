@@ -38,7 +38,7 @@ A customer complaint management system built with React, TypeScript, and Vite.
    ```bash
    pnpm dev
    ```
-4. Start the (backend)[https://github.com/pedersandvoll/Practice-Exam-BE] server (required for the application to work):
+4. Start the [backend](https://github.com/pedersandvoll/Practice-Exam-BE) server (required for the application to work):
 
 ## Available Scripts
 
