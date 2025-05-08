@@ -38,12 +38,7 @@ A customer complaint management system built with React, TypeScript, and Vite.
    ```bash
    pnpm dev
    ```
-4. Start the backend server (required for the application to work):
-   ```bash
-   # Clone the backend (directory)[https://github.com/pedersandvoll/Practice-Exam-BE]
-   # Navigate to the backend directory
-   # Run the backend server on port 3000
-   ```
+4. Start the (backend)[https://github.com/pedersandvoll/Practice-Exam-BE] server (required for the application to work):
 
 ## Available Scripts
 
