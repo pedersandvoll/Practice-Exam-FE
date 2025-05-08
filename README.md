@@ -1,54 +1,72 @@
-# React + TypeScript + Vite
+# Kundeklager-360
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A customer complaint management system built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- User authentication (login/register)
+- Create, view, and edit customer complaints
+- Filter and search complaints
+- Add comments to complaints
+- Categorize complaints
+- Set priority and status for complaints
 
-## Expanding the ESLint configuration
+## Technologies
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 19
+- TypeScript
+- Vite
+- TanStack Router for routing
+- TanStack Query for data fetching
+- TanStack Form for form handling
+- Material UI for UI components
+- Zod for schema validation
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Prerequisites
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Node.js (v18 or higher recommended)
+- pnpm package manager
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Setup and Installation
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+3. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+4. Start the backend server (required for the application to work):
+   ```bash
+   # Clone the backend (directory)[https://github.com/pedersandvoll/Practice-Exam-BE]
+   # Navigate to the backend directory
+   # Run the backend server on port 3000
+   ```
+
+## Available Scripts
+
+- `pnpm dev` - Start the development server
+- `pnpm build` - Build the application for production
+- `pnpm lint` - Run ESLint to check for code quality issues
+- `pnpm preview` - Preview the production build locally
+
+## API Configuration
+
+The application communicates with a backend API running on `http://localhost:3000`. Ensure the backend server is running before using the application.
+
+## Authentication
+
+The application uses JWT-based authentication. After login, the token is stored in localStorage and included in subsequent API requests.
+
+## Project Structure
+
+- `/src/apis` - API client and request handling
+- `/src/components` - Reusable UI components
+- `/src/components/forms` - Form components for data entry
+- `/src/context` - React context providers
+- `/src/enums` - TypeScript enums for the application
+- `/src/hooks` - Custom React hooks
+- `/src/routes` - Application routes and pages
+
