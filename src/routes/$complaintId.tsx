@@ -1,10 +1,23 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useGetCustomerComplaintById } from "../hooks/apiHooks";
 import ComplaintDetailDialog from "../components/ComplaintDetailDialog";
 import { useEffect } from "react";
 import { Index } from "../routes/index";
 
 export const Route = createFileRoute("/$complaintId")({
+  beforeLoad: async ({ location }) => {
+    const token = localStorage.getItem("token");
+    const isAuthenticated = !!token;
+
+    if (!isAuthenticated) {
+      throw redirect({
+        to: "/login",
+        search: {
+          redirect: location.href,
+        },
+      });
+    }
+  },
   component: ComplaintDetail,
 });
 
