@@ -22,7 +22,9 @@ interface ComplaintDetailDialogProps {
   isLoading: boolean;
 }
 
-export const getPriorityLabel = (priority: Priority) => {
+export const getPriorityLabel = (
+  priority: Priority,
+): { label: string; color: "error" | "warning" | "success" | "default" } => {
   switch (priority) {
     case Priority.High:
       return { label: "Høy", color: "error" };
@@ -35,7 +37,7 @@ export const getPriorityLabel = (priority: Priority) => {
   }
 };
 
-export const getStatusLabel = (status: Status) => {
+export const getStatusLabel = (status: Status): { label: string } => {
   switch (status) {
     case Status.New:
       return { label: "Ny" };
@@ -113,7 +115,7 @@ export default function ComplaintDetailDialog({
           <Typography variant="h6">{complaint.Customer.Name}</Typography>
           <Chip
             label={priorityInfo.label}
-            color={priorityInfo.color as any}
+            color={priorityInfo.color}
             size="small"
           />
         </Box>
@@ -124,6 +126,16 @@ export default function ComplaintDetailDialog({
         </Typography>
 
         <Box sx={{ my: 2 }}>
+          <Typography variant="subtitle2" color="text.secondary">
+            Dato:{" "}
+            {new Date(complaint.complaint_date).toLocaleString("no-NO", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Typography>
           <Typography variant="subtitle2" color="text.secondary">
             Status: {statusInfo.label}
           </Typography>

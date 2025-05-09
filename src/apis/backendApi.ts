@@ -110,6 +110,7 @@ export interface CustomerComplaints {
   Status: Status;
   Comments: Comment[];
   Category: Categories;
+  complaint_date: Date;
 }
 
 export async function getUsers() {
@@ -203,6 +204,7 @@ export async function editComplaint(
         priority: model.priority,
         status: model.status,
         category: model.category,
+        date: model.date,
       }),
       headers: createHeaders(),
     },

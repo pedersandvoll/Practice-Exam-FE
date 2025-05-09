@@ -9,6 +9,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { useGetCategories, useGetCustomers } from "../../hooks/apiHooks";
@@ -17,6 +21,7 @@ import { Priority, Status } from "../../enums";
 const newComplaintSchema = z.object({
   customername: z.string().min(1, { message: "Customer is required" }),
   description: z.string().min(1, { message: "Description is required" }),
+  date: z.date(),
   priority: z.nativeEnum(Priority, { message: "Priority is required" }),
   status: z.nativeEnum(Status, { message: "Status is required" }),
   category: z.number(),
@@ -38,6 +43,7 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
     defaultValues = {
       customername: "",
       description: "",
+      date: Date.now(),
       priority: Priority.Medium,
       status: Status.New,
       category: 4,
@@ -125,6 +131,20 @@ export default function NewComplaintForm(props: NewComplaintFormProps) {
                 field.state.meta.errors[0]?.message
               }
             />
+          )}
+        />
+        <form.Field
+          name="date"
+          children={(field) => (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="Klage dato"
+                value={dayjs(field.state.value)}
+                onChange={(newValue) => {
+                  field.handleChange(newValue ? newValue.toDate() : Date.now());
+                }}
+              />
+            </LocalizationProvider>
           )}
         />
         <form.Field

@@ -335,6 +335,7 @@ export function Index(props: IndexProps) {
                           priority: complaint.Priority,
                           category: complaint.Category.ID,
                           status: complaint.Status,
+                          date: complaint.complaint_date,
                         }}
                         edit={true}
                       />
